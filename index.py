@@ -1,7 +1,7 @@
 import os
 
 
-print("# My Blog")
+print("% My Blog")
 
 posts = (x for x in os.listdir("posts") if x.endswith(".md"))
 
