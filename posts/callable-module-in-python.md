@@ -1,4 +1,4 @@
-# Making Python Modules Callable: Introducing Cadule
+% Making Python Modules Callable: Introducing Cadule
 
 When writing Python code, I often find myself missing a feature from Node.js: the ability to directly `require` a module and have it become callable. In Node.js, you can export a function from a module and call it immediately:
 
