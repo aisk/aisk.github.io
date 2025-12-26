@@ -105,3 +105,7 @@ Cadule is particularly useful for:
 - **Single-purpose modules**: When a module's main purpose is to expose one function
 - **DSL and fluent interfaces**: Creating more natural-looking APIs
 - **Scripts and utilities**: Making command-line tools more intuitive
+
+---
+
+Github: https://github.com/aisk/cadule
