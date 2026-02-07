@@ -52,6 +52,8 @@ This works by dynamically replacing the module's `__class__` at runtime. But who
 
 To avoid repeating this boilerplate, I've encapsulated this simple mechanism into a package called **Cadule** (short for **Ca**llable **[Mo]dule** **Le**ss).
 
+GitHub: https://github.com/aisk/cadule
+
 ### Installation
 
 ```bash
@@ -105,7 +107,3 @@ Cadule is particularly useful for:
 - **Single-purpose modules**: When a module's main purpose is to expose one function
 - **DSL and fluent interfaces**: Creating more natural-looking APIs
 - **Scripts and utilities**: Making command-line tools more intuitive
-
----
-
-Github: https://github.com/aisk/cadule
