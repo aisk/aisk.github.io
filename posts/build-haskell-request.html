@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>build-haskell-request</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<h1
+id="building-a-python-requests-style-http-client-in-haskell">Building a
+Python-requests-style HTTP Client in Haskell</h1>
+<h2 id="the-problem-with-learning-haskell">The Problem with Learning
+Haskell</h2>
+<p>When I started learning Haskell, I always struggled to find a
+suitable scenario to apply it. Without a concrete problem to solve, it
+is difficult to make real progress.</p>
+<p>At some point I had some practical work to do: fetch data from HTTP
+APIs, process the results, and post them to other endpoints. My instinct
+was to reach for Python and the <code>requests</code> library, because
+it is genuinely handy for this kind of task. You grab a URL, get back
+some JSON, transform it, and send it somewhere else. The whole thing can
+be done in a few lines.</p>
+<p>But I thought: this is exactly the kind of real problem I need. Why
+not try Haskell?</p>
+<h2 id="exploring-the-existing-ecosystem">Exploring the Existing
+Ecosystem</h2>
+<p>The first thing I reached for was <code>http-client</code>. It is
+powerful and the foundation for most other Haskell HTTP libraries. But
+using it directly requires quite a bit of setup for simple tasks. You
+need to create a manager, parse a request, and work with a set of
+low-level types. It is a great library, but it is designed for cases
+where you need precise control.</p>
+<p>There are some lighter alternatives. <code>wreq</code> is a popular
+one, built on a lens API. Lenses are a fascinating part of the Haskell
+ecosystem and many people find them worth learning. <code>req</code> is
+another option with a clean, type-safe API. I used <code>req</code> to
+finish the work I was doing, and it worked well. But I still missed the
+simplicity of Python’s <code>requests</code>, and I kept thinking about
+whether something like it was possible in Haskell.</p>
+<h2 id="finding-http-dispatch-and-deciding-to-build-something">Finding
+http-dispatch and Deciding to Build Something</h2>
+<p>Some time later, I came across <code>http-dispatch</code>. It was
+much closer to what I had in mind. The API was straightforward and the
+concepts were familiar. Unfortunately the library had not been
+maintained for a long time. There were some bugs, and some fixes in the
+source code had never made it to Hackage.</p>
+<p>That is when I decided to build my own.</p>
+<p>The goal was simple: a library for scenarios where you do not need
+fine-grained control over the HTTP lifecycle. For those cases,
+<code>http-client</code> is the right tool. But for the common case of
+making a request and getting back a response, I wanted something that
+felt closer to the Python experience.</p>
+<h2 id="the-core-abstraction">The Core Abstraction</h2>
+<p>I started from the most basic mental model of an HTTP interaction:
+you have a request, you send it to a server, and you get back a
+response.</p>
+<p>This became the core API:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Request</span> a <span class="ot">=</span> <span class="dt">Request</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  {<span class="ot"> method  ::</span> <span class="dt">Method</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> url     ::</span> <span class="dt">String</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> headers ::</span> <span class="dt">Headers</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> body    ::</span> <span class="dt">Maybe</span> a</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Response</span> a <span class="ot">=</span> <span class="dt">Response</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  {<span class="ot"> status  ::</span> <span class="dt">Int</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> headers ::</span> <span class="dt">Headers</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> body    ::</span> a</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ot">send ::</span> (<span class="dt">ToRequestBody</span> a, <span class="dt">FromResponseBody</span> b) <span class="ot">=&gt;</span> <span class="dt">Request</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Response</span> b)</span></code></pre></div>
+<p>The <code>send</code> function takes a <code>Request</code> and
+produces a <code>Response</code> in <code>IO</code>. The type parameters
+carry the body types, and the typeclass constraints handle serialization
+and deserialization automatically.</p>
+<p>For common HTTP methods, there are simple shortcuts:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- A simple GET request</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>resp <span class="ot">&lt;-</span> get <span class="st">&quot;https://example.com&quot;</span><span class="ot"> ::</span> <span class="dt">IO</span> (<span class="dt">Response</span> <span class="dt">String</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span> resp<span class="op">.</span>status  <span class="co">-- 200</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span> resp<span class="op">.</span>body    <span class="co">-- HTML content as String</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">-- POST with a plain text body</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>resp <span class="ot">&lt;-</span> post <span class="st">&quot;https://httpbin.org/post&quot;</span> (<span class="st">&quot;hello&quot;</span><span class="ot"> ::</span> <span class="dt">String</span>)<span class="ot"> ::</span> <span class="dt">IO</span> (<span class="dt">Response</span> <span class="dt">String</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span> resp<span class="op">.</span>status  <span class="co">-- 200</span></span></code></pre></div>
+<p>You can also construct a <code>Request</code> manually when you need
+custom headers:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> req <span class="ot">=</span> <span class="dt">Request</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>      { method  <span class="ot">=</span> <span class="dt">GET</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>      , url     <span class="ot">=</span> <span class="st">&quot;https://api.example.com/data&quot;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>      , headers <span class="ot">=</span> [(<span class="st">&quot;Authorization&quot;</span>, <span class="st">&quot;Bearer my-token&quot;</span>)]</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>      , body    <span class="ot">=</span> <span class="dt">Nothing</span><span class="ot"> ::</span> <span class="dt">Maybe</span> <span class="dt">BS.ByteString</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>resp <span class="ot">&lt;-</span> send<span class="ot"> req ::</span> <span class="dt">IO</span> (<span class="dt">Response</span> <span class="dt">String</span>)</span></code></pre></div>
+<p>The library supports modern Haskell record dot syntax
+(<code>resp.status</code>, <code>resp.body</code>) as well as
+traditional accessor functions (<code>responseStatus resp</code>,
+<code>responseBody resp</code>) for those who prefer not to enable
+language extensions.</p>
+<h2 id="json-integration">JSON Integration</h2>
+<p>The feature I most wanted to replicate from Python’s
+<code>requests</code> is its JSON handling. In Python, you pass
+<code>json=</code> to your request and call <code>.json()</code> on the
+response. It handles the content type header, the serialization, and the
+deserialization for you. Most API work is exactly this: send JSON,
+receive JSON.</p>
+<p>Haskell’s type system makes this possible in a way that is, I think,
+even nicer than Python. Because we declare our data types upfront, we
+get static guarantees about the shape of the data.</p>
+<p>Here is an example of parsing a JSON response:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE DeriveGeneric #-}</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Aeson</span> (<span class="dt">FromJSON</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">GHC.Generics</span> (<span class="dt">Generic</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Network.HTTP.Request</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Date</span> <span class="ot">=</span> <span class="dt">Date</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  {<span class="ot"> __type ::</span> <span class="dt">String</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> iso     ::</span> <span class="dt">String</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  } <span class="kw">deriving</span> (<span class="dt">Show</span>, <span class="dt">Generic</span>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">FromJSON</span> <span class="dt">Date</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  response <span class="ot">&lt;-</span> get <span class="st">&quot;https://api.leancloud.cn/1.1/date&quot;</span><span class="ot"> ::</span> <span class="dt">IO</span> (<span class="dt">Response</span> <span class="dt">Date</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span> response<span class="op">.</span>status  <span class="co">-- 200</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span> response<span class="op">.</span>body    <span class="co">-- Date { __type = &quot;Date&quot;, iso = &quot;2026-03-14T...&quot; }</span></span></code></pre></div>
+<p>There is no explicit parsing step. The type annotation
+<code>:: IO (Response Date)</code> is enough to tell the library to
+decode the JSON body into a <code>Date</code> value. If decoding fails,
+an <code>AesonException</code> is thrown.</p>
+<p>Sending JSON works the same way:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Message</span> <span class="ot">=</span> <span class="dt">Message</span> {<span class="ot"> content ::</span> <span class="dt">String</span> } <span class="kw">deriving</span> (<span class="dt">Generic</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">ToJSON</span> <span class="dt">Message</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  resp <span class="ot">&lt;-</span> post <span class="st">&quot;https://api.example.com/messages&quot;</span> (<span class="dt">Message</span> <span class="st">&quot;Hello&quot;</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="ot">            ::</span> <span class="dt">IO</span> (<span class="dt">Response</span> <span class="dt">String</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span> resp<span class="op">.</span>status</span></code></pre></div>
+<p>Any type with a <code>ToJSON</code> instance is automatically
+serialized, and <code>Content-Type: application/json</code> is set on
+the request. You do not need to think about it.</p>
+<p>This gives you the simplicity of Python’s <code>requests</code>
+combined with the compile-time guarantees of a static type system. You
+define your API shapes as types, and the compiler helps you use them
+correctly.</p>
+<h2 id="using-it-for-an-llm-agent">Using It for an LLM Agent</h2>
+<p>With the library in a working state, I wanted to build something more
+substantial with it. I decided to implement a small LLM agent. That
+became <code>hasuke</code>, a CLI tool for interacting with Claude.</p>
+<p>Calling an Anthropic-style API is exactly the use case this library
+was built for. You construct a JSON request body, send it to the
+endpoint, and get back a JSON response. The library handled all of this
+without any friction.</p>
+<p>But after building the first version, I noticed that it would sit
+silently until the full response was generated, then display everything
+at once. Modern LLM providers support streaming responses to address
+this: they send partial results incrementally using Server-Sent Events,
+so you start seeing output right away.</p>
+<h2 id="adding-streaming-and-sse-support">Adding Streaming and SSE
+Support</h2>
+<p>I extended the library to support streaming. The key was to express
+this within the existing type system without changing the core API. I
+introduced a <code>StreamBody</code> type:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">StreamBody</span> a <span class="ot">=</span> <span class="dt">StreamBody</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  {<span class="ot"> readNext    ::</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> a)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> closeStream ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  }</span></code></pre></div>
+<p>To receive a streaming response, you just change the type
+annotation:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> req <span class="ot">=</span> <span class="dt">Request</span> <span class="dt">GET</span> <span class="st">&quot;https://example.com/stream&quot;</span> [] (<span class="dt">Nothing</span><span class="ot"> ::</span> <span class="dt">Maybe</span> <span class="dt">BS.ByteString</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>resp <span class="ot">&lt;-</span> send<span class="ot"> req ::</span> <span class="dt">IO</span> (<span class="dt">Response</span> (<span class="dt">StreamBody</span> <span class="dt">BS.ByteString</span>))</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> loop <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>      mChunk <span class="ot">&lt;-</span> resp<span class="op">.</span>body<span class="op">.</span>readNext</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>      <span class="kw">case</span> mChunk <span class="kw">of</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        <span class="dt">Nothing</span>    <span class="ot">-&gt;</span> <span class="fu">return</span> ()</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        <span class="dt">Just</span> chunk <span class="ot">-&gt;</span> BS.putStr chunk <span class="op">&gt;&gt;</span> loop</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>loop</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>resp<span class="op">.</span>body<span class="op">.</span>closeStream</span></code></pre></div>
+<p>For SSE, the library parses the event stream protocol automatically.
+Each <code>SseEvent</code> has fields for the data, event type, and
+event id:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">SseEvent</span> <span class="ot">=</span> <span class="dt">SseEvent</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  {<span class="ot"> sseData ::</span> <span class="dt">T.Text</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> sseType ::</span> <span class="dt">Maybe</span> <span class="dt">T.Text</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> sseId   ::</span> <span class="dt">Maybe</span> <span class="dt">T.Text</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  }</span></code></pre></div>
+<p>Using it looks like this:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> req <span class="ot">=</span> <span class="dt">Request</span> <span class="dt">POST</span> <span class="st">&quot;https://api.anthropic.com/v1/messages&quot;</span> headers (<span class="dt">Just</span> body)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>resp <span class="ot">&lt;-</span> send<span class="ot"> req ::</span> <span class="dt">IO</span> (<span class="dt">Response</span> (<span class="dt">StreamBody</span> <span class="dt">SseEvent</span>))</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> loop <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>      mEvent <span class="ot">&lt;-</span> resp<span class="op">.</span>body<span class="op">.</span>readNext</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>      <span class="kw">case</span> mEvent <span class="kw">of</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        <span class="dt">Nothing</span>    <span class="ot">-&gt;</span> <span class="fu">return</span> ()</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        <span class="dt">Just</span> event <span class="ot">-&gt;</span> T.putStr event<span class="op">.</span>sseData <span class="op">&gt;&gt;</span> loop</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>loop</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>resp<span class="op">.</span>body<span class="op">.</span>closeStream</span></code></pre></div>
+<p>The <code>send</code> function signature did not change at all. When
+the target type is <code>StreamBody SseEvent</code>, the library keeps
+the connection open and streams events through an internal buffer. From
+the caller’s side, you are just getting a different kind of response
+body.</p>
+<p>This is where Haskell’s type system earns its keep. Adding a
+completely different data transfer mode required almost no changes to
+the existing API. The same <code>send</code> function, the same
+<code>Request</code> type, the same conventions. It is now working well
+in <code>hasuke</code>.</p>
+<h2 id="where-things-stand">Where Things Stand</h2>
+<p>The library is published on Hackage under the name
+<code>request</code> and can be installed with cabal or stack in the
+usual way. The source code is on GitHub at
+https://github.com/aisk/request. It powers the streaming output in
+<code>hasuke</code>, which you can find at
+https://github.com/aisk/hasuke.</p>
+<p>There are features still missing, such as support for HTML form
+encoding and some other less common use cases. I plan to add these
+gradually over time. If you run into something you need, feel free to
+open an issue on GitHub. Feedback and contributions are very
+welcome.</p>
+<p>For the common case of calling JSON APIs, whether in a single
+response or as a stream, the library does what it was built to do. If
+you are learning Haskell and looking for a practical project, or you
+just need a lightweight HTTP client, it might be worth a try.</p>
+</body>
+</html>
