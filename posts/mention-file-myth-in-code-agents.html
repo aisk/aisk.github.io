@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>mention-file-myth-in-code-agents</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style>
+    body {
+      max-width: 56em;
+    }
+  </style>
+</head>
+<body>
+<h1 id="the-mention-file-myth-in-code-agents">The Mention File Myth in
+Code Agents</h1>
+<blockquote>
+<p><em>Disclaimer: This post was written by me, but I used GLM 5.6 to
+restructure and polish the text. Parts of the investigation behind it
+were also done with GLM 5.6.</em></p>
+</blockquote>
+<h2 id="how-it-started">How it started</h2>
+<p>When Claude Code first came out, I picked up two habits from the
+official blog post<a href="#fn1" class="footnote-ref" id="fnref1"
+role="doc-noteref"><sup>1</sup></a> that immediately felt like upgrades:
+using <code>!</code> to run shell commands inline, and using
+<code>@</code> to mention a file.</p>
+<p>Both felt handy. <code>!</code> let me run commands I was comfortable
+with myself and feed the output into Claude’s context, or simply take
+over the follow-up work by hand while Claude kept the full context of
+what happened. <code>@</code> felt just as good: it let me tell Claude
+exactly where a file was. If I only gave it a file name, it would have
+to generate content to call tools and go look for the file, the location
+might not be accurate, and it could take several rounds of operations
+before it found the right one.</p>
+<p>For a while, this was simply how I worked.</p>
+<h2 id="the-wasted-tokens-take">The “wasted tokens” take</h2>
+<p>A few months later, I started seeing people on X arguing against
+<code>@</code>. The argument was simple and, at the time, felt obviously
+correct: <code>@</code> is not magic. It is a deterministic piece of
+client-side code that reads the file from disk, expands its contents
+into the user’s prompt, and sends the whole thing to the LLM.<a
+href="#fn2" class="footnote-ref" id="fnref2"
+role="doc-noteref"><sup>2</sup></a> So if you <code>@</code> a very
+large file, you are wasting an enormous amount of tokens.</p>
+<p>That clicked for me. Of course that is how mention file had to be
+implemented: like <code>!</code> invoking the shell, it is at heart a
+deterministic program, so this kind of problem is hard to avoid.</p>
+<h2 id="the-vibe-coding-shift">The vibe coding shift</h2>
+<p>Then vibe coding became a thing, models got noticeably stronger, and
+I found myself no longer using <code>@</code> most of the time. Every
+time I watched the model work, it checked the directory structure
+whenever it needed to, and when I asked it to read some file, it usually
+already knew where the file was. Context windows had also grown across
+the board, so letting the model spend a few extra tool calls and round
+trips was not much of a cost; in exchange, I got the efficiency of
+describing files vaguely instead of typing exact paths. (Yes: I had
+discovered that the bottleneck was now me, and my typing speed.)</p>
+<p>I didn’t think about how <code>@</code> was implemented again for a
+long time.</p>
+<h2 id="building-my-own-agent">Building my own agent</h2>
+<p>That changed when I started building <a
+href="https://github.com/aisk/paimon">paimon</a>, my own code agent.
+When it came time to implement mention file, the old question came back
+to me. I thought it through carefully, and suddenly it seemed the old
+conclusion wasn’t necessarily right.</p>
+<ul>
+<li>What if <code>@</code> is just a local convenience for the user at
+input time (an autocomplete for file paths), and the program never reads
+any content into the prompt at all?</li>
+<li>Or, thinking about it more: mention file really is a deterministic
+behavior. If the code agent has actually read a file once, could it send
+the full content along with more information, like a sha256 of the
+contents? Then the next time the file is read, if it finds it was sent
+before and the sha256 hasn’t changed, could it send only the metadata,
+letting the model know it has already read this file and the hash is
+unchanged?</li>
+<li>And if so, when the content does need to be expanded, how should
+compaction be handled? Would this need some complicated machinery to
+manage?</li>
+</ul>
+<p>After thinking it over, I came up with a design based on passing
+metadata. Each mentioned file would be wrapped in an XML envelope that
+tells the model the file path, a sha256 of the contents, whether the
+enclosed content is the full file or only part of it, which lines are
+included, and how many lines the file actually has. Roughly:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">file</span> <span class="ot">path=</span><span class="st">&quot;src/parser.py&quot;</span> <span class="ot">sha256=</span><span class="st">&quot;3f6a…&quot;</span> <span class="ot">content=</span><span class="st">&quot;partial&quot;</span> <span class="ot">lines=</span><span class="st">&quot;1-200&quot;</span> <span class="ot">total-lines=</span><span class="st">&quot;1240&quot;</span>&gt;</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>...</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">file</span>&gt;</span></code></pre></div>
+<p>If the full content had already been sent in the current session and
+the hash was unchanged, only the reference metadata would go out,
+letting the model know it had already read this file and nothing had
+changed; files over a size threshold would only get their head sent,
+with the real length in the metadata. Since no model has ever seen this
+convention, the rules would be spelled out in the system prompt.
+Underneath, the agent would keep an in-memory table of every file sent
+so far (the hash, and what exactly had been transmitted), and reset it
+after compaction, when “already sent in full” no longer holds. It added
+up to a rather complex state transition diagram.</p>
+<p>It sounds like a bit of a hassle, but with the help of ChatGPT 5.6
+sol, the states and flows got sorted out quickly. It even thoughtfully
+added one more design on top: when the user pins line numbers with the
+<code>@filename:10-20</code> syntax, the fully transmitted ranges are
+recorded too; when a later mention of another range overlaps with what
+was sent before and is fully covered, the ranges can be merged.
+Computing those overlaps (which ranges are already covered, which
+partially intersect, which should be merged into one) was the genuinely
+fiddly part of the whole design.</p>
+<h2 id="wait-didnt-cursor-try-this">Wait, didn’t Cursor try this?</h2>
+<p>That was the moment it suddenly hit me: isn’t this mechanism getting
+way too complex?</p>
+<p>It reminded me of when Cursor first launched, and people were
+analyzing and guessing at how it must work under the hood. The story
+went: LLM context windows were small, so the code was retrieved with RAG
+and only the relevant snippets were sent<a href="#fn3"
+class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>;
+some analyses went further, speculating that after a tool call finished
+operating on files or commands, the context around the call was dropped
+entirely, with just the result stitched back in. Whether or not that
+second part was ever true, the design people believed in looked
+extremely clever. But in my own use at the time, the results on longer
+agent-style tasks were underwhelming. Then Claude Code came out and did
+almost the opposite: it hunted for code bluntly with <code>rg</code> and
+other plain commands, never rolled context back, and just kept pushing
+everything forward until the window filled up and compaction kicked in.
+For me it worked dramatically better.<a href="#fn4" class="footnote-ref"
+id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<p>I don’t claim to fully understand how LLMs work, but seeing Claude
+Code’s approach made me realize what that rumored design was essentially
+doing: treating the context window as a kind of database, assuming that
+anything sent to the LLM would be reliably remembered. But the
+attention-based LLMs popular today make no such guarantee. Content that
+has already appeared in the context is not reliably used, especially
+once it sits deep in a long history<a href="#fn5" class="footnote-ref"
+id="fnref5" role="doc-noteref"><sup>5</sup></a>, which is why the model
+will try to read things again.</p>
+<p>And now I was designing exactly that kind of clever mechanism. The
+overlap merging, the hash-based dedup, the “just send metadata if the
+hash matches” trick. All of it was treating the context window as a
+database of record, and maybe I was making the same mistake.</p>
+<h2 id="checking-the-facts">Checking the facts</h2>
+<p>Fortunately, open-source code agents are everywhere now, and quite a
+few of them are well known. So instead of theorizing, I decided to
+actually investigate whether the conclusions I had reached last year
+were true. Using opencode with GLM 5.6, I went through five well-known
+open-source agents: <code>pi</code>, <code>opencode</code>,
+<code>gemini-cli</code>, <code>grok-build</code>, and
+<code>codex</code>.<a href="#fn6" class="footnote-ref" id="fnref6"
+role="doc-noteref"><sup>6</sup></a></p>
+<p>Even the very first question, whether <code>@</code> sends file
+contents at all, splits the field. Four of the five read the file and
+inline it into the user message: pi wraps it in
+<code>&lt;file name="..."&gt;</code> (though only for files passed as
+CLI startup arguments; in its interactive TUI, <code>@</code> is just
+path autocomplete and the literal path text is sent), grok-build in
+<code>&lt;file_contents path="..."&gt;</code> with line numbers,
+gemini-cli between <code>--- Content from referenced files ---</code>
+markers, and opencode fakes a tool call — the model sees
+<code>Called the Read tool with the following input: {...}</code>
+followed by standard Read output, as if it had called the tool itself.
+And then there is codex, which does not read the file at all:
+<code>@</code> is a fuzzy filename search, and picking a result just
+inserts the path as plain text. The model is expected to
+<code>cat</code> or <code>rg</code> it when it cares. That is exactly
+the “maybe <code>@</code> is just autocomplete” possibility from my
+first bullet point.</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Agent</th>
+<th>What <code>@</code> sends</th>
+<th>Metadata beyond the path</th>
+<th>Line-range syntax</th>
+<th>Tracks what was sent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>pi</strong></td>
+<td>Full content, no truncation (CLI args only)</td>
+<td>None</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><strong>opencode</strong></td>
+<td>Content through its own Read tool (2000 lines / 50 KB cap), faked as
+a tool call</td>
+<td>Truncation notes: “Use offset=N to continue”</td>
+<td>✅ <code>@file#12-18</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><strong>gemini-cli</strong></td>
+<td>Full content (2000-line cap, 20 MB hard reject)</td>
+<td>A truncation warning pointing at <code>read_file</code></td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><strong>grok-build</strong></td>
+<td>Full content up to ~5,000 est. tokens, then a metadata-only
+stub</td>
+<td><code>skipped="true"</code> + reason on oversized files</td>
+<td>✅ <code>@foo.rs:10-20</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><strong>codex</strong></td>
+<td>Nothing, just the path as plain text</td>
+<td>—</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<p>Then I held my paimon design up against these implementations, point
+by point.</p>
+<p><strong>Nobody sends a hash, and a file’s true size surfaces only in
+truncation hints.</strong> The envelopes carry a path and the content,
+and that is essentially it (opencode’s Read-style output does close with
+a total line count). The closest thing to my metadata design is
+grok-build’s handling of oversized files: past ~5,000 estimated tokens
+it drops the body entirely and sends a stub like
+<code>&lt;file_contents path="..." skipped="true" reason="file too large (~5800 estimated tokens, limit 5000). Use read_file tool to read specific sections."/&gt;</code>.
+The truncating agents all do some version of this: tell the model it got
+cut off and point it back at its own read tool. Metadata as a “go read
+it yourself” hint, never as a dedup key.</p>
+<p><strong>Nobody tracks what was already sent.</strong> No hash, no
+mtime, no in-memory table, no “you already have this file” path. Every
+mention re-reads the disk and re-sends in full; the only dedup anywhere
+is a <code>Set</code> that collapses duplicate mentions within a single
+message. The one sha256 I found in a mention path (grok-build’s) is used
+to name spill files on disk and never reaches the model. The one genuine
+counterexample is buried in gemini-cli: a
+<code>ContextCompressionService</code> that hashes file contents and
+asks a small model to route each old file to FULL / PARTIAL / SUMMARY /
+EXCLUDED, startlingly close to a chunk of my design. Except it sits
+behind a default-off experimental flag, nothing in the runtime actually
+instantiates it at the commit I read, and even if it ran, it only
+processes read-tool responses, not <code>@</code>-mention inlines.
+Someone had the same idea, and it has not shipped.</p>
+<p><strong>Line-range syntax exists; overlap bookkeeping does
+not.</strong> opencode supports <code>@file#12-18</code> (translated
+into a Read call with offset and limit) and grok-build supports
+<code>@foo.rs:10-20</code>. Neither records which ranges were sent, and
+neither merges overlapping ones; every mention is an independent read.
+The overlap-merging machinery ChatGPT and I sketched exists nowhere.</p>
+<p><strong>Nobody explains the convention in the system prompt.</strong>
+All five system prompts are silent about what a mention looks like. pi
+and grok-build rely on the XML being self-describing; a comment in
+grok-build’s source calls its format “the training format we have been
+using”. opencode’s fake Read call is the cleverest dodge: nothing needs
+to be documented, because the model already knows what Read output looks
+like. And codex has nothing to explain, because it sends nothing but a
+path.</p>
+<p><strong>Compaction does nothing special with mentions.</strong> In
+all five, when history gets summarized, inlined file content is treated
+as ordinary user text and fed to the summarizer wholesale: no hash
+routing, no placeholder substitution. My worry about “how does the state
+survive compaction” dissolves completely: there is no state to
+survive.</p>
+<p><strong>Nobody watches for staleness.</strong> If a mentioned file
+changes on disk afterwards, nothing marks the old copy in the context as
+expired. The model finds out whenever it next happens to read the
+file.</p>
+<p><strong>And the most telling discovery: codex used to do it the other
+way.</strong> In its TypeScript CLI era, codex’s <code>@</code> worked
+exactly like the others: “file contents automatically expanded into XML
+blocks before being sent to the LLM”, in the words of the pull request
+that introduced it, with <code>@path[50:80]</code> line selection listed
+as a next step. The Rust rewrite replaced all of that with the path-only
+fuzzy search, without a word in the commit history about why content
+expansion was dropped, and the TypeScript implementation was later
+deleted outright. The only agent that demonstrably walked the “expand
+and enrich” road turned around and walked all the way back to the most
+minimal design possible.</p>
+<h2 id="closing-thought">Closing thought</h2>
+<p>So my old understanding was wrong on just about every count. In one
+direction, today’s code agents are smarter than I imagined: most of them
+will not naively shovel an entire file at the LLM in one go; past a
+certain size they truncate, refuse, or swap in a stub that tells the
+model to go read the file itself. In the other direction, none of them
+needed the elaborate system I had been so pleased with designing.
+However precise the state diagram looked, the LLM does not want any of
+it. The model does not fail because we re-sent a file; it fails when it
+cannot find the file, or when we sent less than it needed. The
+complexity was for my own satisfaction, not the model’s.</p>
+<p>As for where this is heading: models keep getting smarter, and
+codex’s design is a straight bet on that. Send nothing but the filename,
+and let the model fetch whatever it cares about. Given how well agentic
+search already works, I suspect this is the better way, and I would not
+be surprised to see more agents drift toward it.</p>
+<p>And there is a bigger difficulty hiding behind this small one, which
+I only appreciated by building an agent myself. Questions like “expand
+the file or just send the path” cannot be settled by reading code or by
+taste: you have to evaluate them against real tasks, and evaluation
+burns tokens at a scale my previous side projects never did. A CLI tool
+can be verified locally in seconds, for free; an agent design decision
+costs real money per data point.</p>
+<p>Worse, the answer may not transfer between models. Reinforcement
+learning is doing a lot of the work in making models better, and it also
+stamps each model with its own working style, so each vendor’s CLI will
+naturally ship whatever mechanism its own model was trained toward and
+scores best on its own evals. grok-build’s source says this out loud:
+its XML format exists because it is “the training format we have been
+using”. For anyone building a general-purpose agent on top of other
+people’s models, that is a quiet, permanent source of trouble: the best
+mechanism is not universal, and you cannot afford to measure
+everything.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>“Claude Code: Best practices for agentic coding”,
+originally published on Anthropic’s engineering blog, now maintained as
+part of the <a
+href="https://code.claude.com/docs/en/best-practices">official
+docs</a>.<a href="#fnref1" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>The official docs still describe <code>@</code> this
+way: “Reference files with <code>@</code> instead of describing where
+code lives. Claude reads the file before responding.”<a href="#fnref2"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>This part of the guess was roughly right, except for the
+“local”: Cursor chunks files locally, but computes embeddings on its
+servers and stores them in a remote vector database, while the code
+itself stays on your machine. See <a
+href="https://read.engineerscodex.com/p/how-cursor-indexes-codebases-fast">How
+Cursor Indexes Codebases Fast</a>. The “drop the tool-call context”
+part, as far as I can tell, was never confirmed; early Cursor didn’t
+even have agent-style tool calls.<a href="#fnref3" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>A detail I only learned while fact-checking this post:
+early Claude Code had also tried RAG with a local vector database, and
+<a href="https://vadim.blog/claude-code-no-indexing/">dropped it in
+favor of plain agentic search</a>. Boris Cherny, its creator: “Early
+versions of Claude Code used RAG + a local vector db, but we found
+pretty quickly that agentic search generally works better.” Another
+Anthropic engineer in the same thread: “In our testing we found that
+agentic search outperformed [it] by a lot, and this was surprising.”<a
+href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>This is a measured phenomenon, not just a vibe: models
+use information in the middle of a long context significantly worse than
+information at the beginning or end. See <a
+href="https://arxiv.org/abs/2307.03172">Lost in the Middle: How Language
+Models Use Long Contexts</a>.<a href="#fnref5" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>All five checked in mid-July 2026, at commits: pi
+<code>87ad8243</code>, opencode <code>efb6cc2d4</code>, gemini-cli
+<code>3ff5ba2</code>, grok-build <code>98c3b24</code>, codex
+<code>315195492c</code>. These are moving targets; details below may
+have changed by the time you read this.<a href="#fnref6"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>

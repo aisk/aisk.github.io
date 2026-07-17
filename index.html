@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="pandoc" />
+  <meta name="generator" content="pandoc 3.10" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Buzhanxian</title>
   <style>
@@ -91,6 +91,7 @@
       color: #606060;
     }
     code {
+      white-space: pre-wrap;
       font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
       font-size: 85%;
       margin: 0;
@@ -154,10 +155,13 @@
     #TOC a:not(:hover) {
       text-decoration: none;
     }
-    code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
-    div.columns{display: flex; gap: min(4vw, 1.5em);}
-    div.column{flex: auto; overflow-x: auto;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
     /* The extra [class] is a hack that increases specificity enough to
        override a similar rule in reveal.js */
@@ -172,7 +176,7 @@
   </style>
   <style>
     body {
-      max-width: 48em;
+      max-width: 56em;
     }
   </style>
 </head>
@@ -181,6 +185,9 @@
 <h1 class="title">Buzhanxian</h1>
 </header>
 <ul>
+<li><a
+href="posts/mention-file-myth-in-code-agents.html">mention-file-myth-in-code-agents.html</a>
+· <em>2026-07-18 03:18:28</em></li>
 <li><a
 href="posts/build-haskell-request.html">build-haskell-request.html</a> ·
 <em>2026-03-14 20:10:04</em></li>
