@@ -244,14 +244,23 @@
       max-width: 56em;
     }
   </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-6EMDZ9RNCQ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-6EMDZ9RNCQ');
+  </script>
 </head>
 <body>
 <h1 id="the-mention-file-myth-in-code-agents">The Mention File Myth in
 Code Agents</h1>
 <blockquote>
-<p><em>Disclaimer: This post was written by me, but I used GLM 5.6 to
+<p><em>Disclaimer: This post was written by me, but I used GLM 5.2 to
 restructure and polish the text. Parts of the investigation behind it
-were also done with GLM 5.6.</em></p>
+were also done with GLM 5.2.</em></p>
 </blockquote>
 <h2 id="how-it-started">How it started</h2>
 <p>When Claude Code first came out, I picked up two habits from the
@@ -319,9 +328,15 @@ tells the model the file path, a sha256 of the contents, whether the
 enclosed content is the full file or only part of it, which lines are
 included, and how many lines the file actually has. Roughly:</p>
 <div class="sourceCode" id="cb1"><pre
-class="sourceCode xml"><code class="sourceCode xml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">file</span> <span class="ot">path=</span><span class="st">&quot;src/parser.py&quot;</span> <span class="ot">sha256=</span><span class="st">&quot;3f6a…&quot;</span> <span class="ot">content=</span><span class="st">&quot;partial&quot;</span> <span class="ot">lines=</span><span class="st">&quot;1-200&quot;</span> <span class="ot">total-lines=</span><span class="st">&quot;1240&quot;</span>&gt;</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>...</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">file</span>&gt;</span></code></pre></div>
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">file</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="ot">path=</span><span class="st">&quot;src/parser.py&quot;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="ot">sha256=</span><span class="st">&quot;3f6a…&quot;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="ot">content=</span><span class="st">&quot;partial&quot;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="ot">lines=</span><span class="st">&quot;1-200&quot;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="ot">total-lines=</span><span class="st">&quot;1240&quot;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>&gt;</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>...</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">file</span>&gt;</span></code></pre></div>
 <p>If the full content had already been sent in the current session and
 the hash was unchanged, only the reference metadata would go out,
 letting the model know it had already read this file and nothing had

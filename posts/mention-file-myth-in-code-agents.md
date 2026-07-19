@@ -1,6 +1,6 @@
 # The Mention File Myth in Code Agents
 
-> *Disclaimer: This post was written by me, but I used GLM 5.6 to restructure and polish the text. Parts of the investigation behind it were also done with GLM 5.6.*
+> *Disclaimer: This post was written by me, but I used GLM 5.2 to restructure and polish the text. Parts of the investigation behind it were also done with GLM 5.2.*
 
 ## How it started
 
@@ -33,7 +33,13 @@ That changed when I started building [paimon](https://github.com/aisk/paimon), m
 After thinking it over, I came up with a design based on passing metadata. Each mentioned file would be wrapped in an XML envelope that tells the model the file path, a sha256 of the contents, whether the enclosed content is the full file or only part of it, which lines are included, and how many lines the file actually has. Roughly:
 
 ```xml
-<file path="src/parser.py" sha256="3f6a…" content="partial" lines="1-200" total-lines="1240">
+<file
+  path="src/parser.py"
+  sha256="3f6a…"
+  content="partial"
+  lines="1-200"
+  total-lines="1240"
+>
 ...
 </file>
 ```
@@ -54,7 +60,7 @@ And now I was designing exactly that kind of clever mechanism. The overlap mergi
 
 ## Checking the facts
 
-Fortunately, open-source code agents are everywhere now, and quite a few of them are well known. So instead of theorizing, I decided to actually investigate whether the conclusions I had reached last year were true. Using opencode with GLM 5.6, I went through five well-known open-source agents: `pi`, `opencode`, `gemini-cli`, `grok-build`, and `codex`.[^6]
+Fortunately, open-source code agents are everywhere now, and quite a few of them are well known. So instead of theorizing, I decided to actually investigate whether the conclusions I had reached last year were true. Using opencode with GLM 5.2, I went through five well-known open-source agents: `pi`, `opencode`, `gemini-cli`, `grok-build`, and `codex`.[^6]
 
 Even the very first question, whether `@` sends file contents at all, splits the field. Four of the five read the file and inline it into the user message: pi wraps it in `<file name="...">` (though only for files passed as CLI startup arguments; in its interactive TUI, `@` is just path autocomplete and the literal path text is sent), grok-build in `<file_contents path="...">` with line numbers, gemini-cli between `--- Content from referenced files ---` markers, and opencode fakes a tool call — the model sees `Called the Read tool with the following input: {...}` followed by standard Read output, as if it had called the tool itself. And then there is codex, which does not read the file at all: `@` is a fuzzy filename search, and picking a result just inserts the path as plain text. The model is expected to `cat` or `rg` it when it cares. That is exactly the "maybe `@` is just autocomplete" possibility from my first bullet point.
 
