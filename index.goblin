@@ -1,0 +1,46 @@
+import "exec"
+import "time"
+import "path"
+
+print("% Buzhanxian")
+
+var posts_dir = path.Path("posts")
+var md_paths = posts_dir.glob("*.md")
+
+var posts = []
+
+for p in md_paths {
+    var html_name = p.stem + ".html"
+    var cmd = exec.Command(
+        "git",
+        ["log", "--follow", "--format=%ad", "--date", "unix", "--", p.as_posix()],
+        stdout=exec.CAPTURE,
+        stderr=exec.CAPTURE
+    )
+    var result = cmd.run()
+    if result.success {
+        var output = result.stdout.decode()
+        var lines = output.split("\n")
+        var last_line = ""
+        if lines.size() > 0 {
+            last_line = lines[lines.size() - 1]
+            if last_line.size() == 0 && lines.size() > 1 {
+                last_line = lines[lines.size() - 2]
+            }
+        }
+        if last_line.size() > 0 {
+            var unix_sec = Int(last_line)
+            var t = time.unix(unix_sec)
+            posts.push({"name": html_name, "time": t})
+        }
+    }
+}
+
+# sort by time descending
+posts.sort(key=func(post) { return post["time"] }, reverse=true)
+
+for post in posts {
+    var name = post["name"]
+    var d = post["time"].format("2006-01-02 15:04:05")
+    print("- [" + name + "](posts/" + name + ") &middot; *" + d + "*")
+}
