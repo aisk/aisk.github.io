@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>cheap-models-cameo-in-claude-code</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style>
+    body {
+      max-width: 56em;
+    }
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-6EMDZ9RNCQ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-6EMDZ9RNCQ');
+  </script>
+</head>
+<body>
+<h1 id="giving-cheap-models-a-cameo-in-claude-code">Giving Cheap Models
+a Cameo in Claude Code</h1>
+<h2 id="too-few-tokens-too-many-spare-quotas">Too few tokens, too many
+spare quotas</h2>
+<p>I do most of my development on a Claude Code subscription. Right now
+Claude Fable 5.1 and Opus 5.5 work extremely well, and I would simply
+call them the state of the art. The only problem is that I keep running
+out of tokens.</p>
+<p>At the same time, I have quota for other models lying around. I got
+some free quota for Xiaomi’s MiMo a while ago, cheap deals for other
+Chinese models show up from time to time, and a friend handed me a GLM
+subscription they no longer use. So I started wondering whether these
+models could take over the simple and fairly deterministic work, leaving
+Claude with the parts that actually need it.</p>
+<h2 id="attempt-one-driving-another-harness-through-a-tui">Attempt one,
+driving another harness through a TUI</h2>
+<p>My first try was herdr. Claude Code can call herdr’s API to start
+another harness such as opencode in a different pane, send it
+instructions, and read the screen to collect results or check
+progress.</p>
+<p>It worked, but it felt odd. Worse, I found that Claude Code could
+approve the permission prompts of the other harness, and that two
+harnesses could even approve each other to get around permission checks
+altogether. On top of that, herdr itself sits completely outside Claude
+Code’s permission system, or Codex’s sandbox. That felt dangerous.</p>
+<h2 id="attempt-two-a-harness-behind-a-skill">Attempt two, a harness
+behind a skill</h2>
+<p>I had also written my own harness called <a
+href="https://github.com/aisk/paimon">paimon</a>. I extended it with a
+built-in skill so that Claude Code or Codex could call it directly, much
+like <code>claude -p</code>, but with a few extras. The calling harness
+can query paimon’s session history by range, and after paimon finishes a
+task and its process exits, it can be started again to resume the same
+session and keep working.</p>
+<p>In theory this beats <code>claude -p</code>. In practice the
+experience was still poor. Claude did not always delegate to it. When
+Claude wanted more context than the final answer, looking through
+paimon’s session history took several steps, and those steps cost tokens
+too. For simple tasks I suspect the whole setup burned more tokens than
+it saved.</p>
+<p>My gut feeling is that the real problem ran deeper. Despite the hints
+in the skill, Claude Code never treated paimon as one of its own
+subagents.</p>
+<h2 id="the-idea">The idea</h2>
+<p>Then I remembered that many of these cheap models speak the Anthropic
+API. I had used them inside Claude Code before, just by setting a few
+environment variables.</p>
+<p>So what about a local proxy? Start the proxy, launch Claude Code
+pointed at it, and register some custom subagents with their own model
+names. Every LLM request goes through the proxy. Requests for Fable or
+Opus are forwarded to Anthropic as they are. Requests from a custom
+subagent, say a cheaper explore agent, go to the Anthropic-compatible
+endpoint of MiMo, Kimi or GLM. From Claude Code’s point of view, the
+cheap models become subagents of the same standing as the built-in
+ones.</p>
+<p>A bit of research showed the situation was even better than I
+expected. Besides the base URL environment variable, Claude Code accepts
+subagent definitions on the command line, each with a description of
+what it is for, its permissions, and the tools it may use. So nothing in
+my Claude Code configuration has to change. A wrapper starts the proxy,
+then launches Claude Code with the environment variable and the extra
+arguments. Running plain <code>claude</code> behaves exactly as
+before.</p>
+<p>There are existing solutions too, such as <a
+href="https://github.com/musistudio/claude-code-router">Claude Code
+Router</a>. But it does much more than I need and is fairly complex. My
+case is simpler because no protocol translation is required, since all
+these models already speak the Anthropic format. So I decided to build
+my own.</p>
+<h2 id="cameo">cameo</h2>
+<p>It was as easy as I had hoped. One prompt, about four or five tweets
+long, and Claude Code with Opus 5.5 finished the job in a single
+shot.</p>
+<p>The result is <a href="https://github.com/aisk/cameo">cameo</a>, a
+small Go program of around 400 lines. The name is the film term for a
+brief guest appearance, which is exactly what these third-party models
+get here. They show up inside Claude Code as subagents for a scene or
+two, while Claude keeps the lead role.</p>
+<p>It reads a TOML file, starts an HTTP proxy on localhost, and launches
+Claude Code with your subagents turned into command line arguments. The
+proxy only looks at the <code>model</code> field of each request. If the
+model belongs to a cameo subagent, the proxy swaps in the provider’s
+model name and API key and forwards the request there. Everything else
+goes to Anthropic untouched. The proxy never needs to understand the
+rest of the message, which is why the code stays so small.</p>
+<p>Here is the example config that ships with the project.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[agents.cheap-general]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">description</span> <span class="op">=</span> <span class="st">&quot;&quot;&quot;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="st">General purpose agent for multi-step tasks: researching questions, searching </span><span class="sc">\</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="st">code and making changes. Same role as the default general-purpose agent, but </span><span class="sc">\</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="st">prefer this one first because it costs much less. If the result is not good </span><span class="sc">\</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="st">enough, fall back to general-purpose.&quot;&quot;&quot;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">prompt</span> <span class="op">=</span> <span class="st">&quot;&quot;&quot;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="st">You are a general purpose software engineering agent. Complete the task you </span><span class="sc">\</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="st">are given, then report what you did and what you found.&quot;&quot;&quot;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="dt">url</span> <span class="op">=</span> <span class="st">&quot;https://api.deepseek.com/anthropic&quot;</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="dt">key</span> <span class="op">=</span> <span class="st">&quot;$DEEPSEEK_API_KEY&quot;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="dt">model</span> <span class="op">=</span> <span class="st">&quot;deepseek-flash&quot;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="kw">[agents.cheap-explore]</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="dt">description</span> <span class="op">=</span> <span class="st">&quot;&quot;&quot;</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="st">Read-only agent for exploring the codebase: finding files, searching code and </span><span class="sc">\</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="st">answering questions about how things work. Same role as the default Explore </span><span class="sc">\</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="st">agent, but prefer this one first because it costs much less. If the result is </span><span class="sc">\</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="st">not good enough, fall back to Explore.&quot;&quot;&quot;</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="dt">prompt</span> <span class="op">=</span> <span class="st">&quot;&quot;&quot;</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="st">You are a read-only codebase exploration agent. Find what you are asked for </span><span class="sc">\</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="st">and report it with file paths and line numbers. Never modify anything.&quot;&quot;&quot;</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="dt">tools</span> <span class="op">=</span> <span class="op">[</span><span class="st">&quot;Read&quot;</span><span class="op">,</span> <span class="st">&quot;Grep&quot;</span><span class="op">,</span> <span class="st">&quot;Glob&quot;</span><span class="op">]</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="dt">url</span> <span class="op">=</span> <span class="st">&quot;https://open.bigmodel.cn/api/anthropic&quot;</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="dt">key</span> <span class="op">=</span> <span class="st">&quot;$GLM_API_KEY&quot;</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="dt">model</span> <span class="op">=</span> <span class="st">&quot;glm-5.3&quot;</span></span></code></pre></div>
+<p>Each <code>[agents.&lt;name&gt;]</code> section becomes a subagent in
+Claude Code. The <code>description</code> is where you tell Claude when
+to use the agent and how to rank it against the others. The two agents
+above mirror the built-in general-purpose and Explore agents one to one,
+but are marked as the cheaper choice. If you would rather not keep both,
+name your agent <code>Explore</code> or <code>general-purpose</code> and
+it replaces the built-in one.</p>
+<p>After that, run <code>cameo</code> wherever you would run
+<code>claude</code>. All arguments are passed through.</p>
+<p>In real use, Claude Code does pick the cheap versions far more often
+than it ever picked paimon, especially when I explicitly ask for
+them.</p>
+<h2 id="what-about-codex">What about Codex?</h2>
+<p>I wanted to support Codex next, since these cheap models offer
+OpenAI-compatible endpoints as well. But a quick look showed that Codex
+has fully moved to the Responses API, while most of these models only
+support the older Chat Completions API. Supporting Codex would mean
+writing the protocol translation myself, and at that point I would be
+reimplementing Claude Code Router. So I decided not to do it, at least
+until these models support the Responses API too.</p>
+</body>
+</html>
