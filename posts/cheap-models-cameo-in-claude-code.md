@@ -1,4 +1,4 @@
-# Giving Cheap Models a Cameo in Claude Code
+# Using Third-Party Models as Subagents Alongside Claude in Claude Code
 
 ## Too few tokens, too many spare quotas
 
