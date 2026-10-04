@@ -1,7 +1,12 @@
 % Buzhanxian
-- [cheap-models-cameo-in-claude-code.html](posts/cheap-models-cameo-in-claude-code.html) &middot; *2026-10-04 01:15:46*
-- [mention-file-myth-in-code-agents.html](posts/mention-file-myth-in-code-agents.html) &middot; *2026-07-18 03:18:28*
-- [build-haskell-request.html](posts/build-haskell-request.html) &middot; *2026-03-14 20:10:04*
-- [callable-module-in-python.html](posts/callable-module-in-python.html) &middot; *2025-12-26 23:45:27*
-- [build-csky-gx6605s.html](posts/build-csky-gx6605s.html) &middot; *2024-04-15 01:17:03*
-- [hello.html](posts/hello.html) &middot; *2024-04-12 21:56:17*
+
+Notes on programming, by [aisk](https://github.com/aisk).
+
+::: posts
+- [2026-10-04]{.date} [Using Third-Party Models as Subagents Alongside Claude in Claude Code](posts/cheap-models-cameo-in-claude-code.html)
+- [2026-07-18]{.date} [The Mention File Myth in Code Agents](posts/mention-file-myth-in-code-agents.html)
+- [2026-03-14]{.date} [Building a Python-requests-style HTTP Client in Haskell](posts/build-haskell-request.html)
+- [2025-12-26]{.date} [Making Python Modules Callable: Introducing Cadule](posts/callable-module-in-python.html)
+- [2024-04-15]{.date} [Build and Modify Linux System Image for C-sky based Gx6605s Board](posts/build-csky-gx6605s.html)
+- [2024-04-12]{.date} [Hello, world!](posts/hello.html)
+:::

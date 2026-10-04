@@ -3,6 +3,9 @@ import "time"
 import "path"
 
 print("% Buzhanxian")
+print("")
+print("Notes on programming, by [aisk](https://github.com/aisk).")
+print("")
 
 var posts_dir = path.Path("posts")
 var md_paths = posts_dir.glob("*.md")
@@ -31,7 +34,9 @@ for p in md_paths {
         if last_line.size() > 0 {
             var unix_sec = Int(last_line)
             var t = time.unix(unix_sec)
-            posts.push({"name": html_name, "time": t})
+            # the first line of a post is its title, as "% Title" or "# Title"
+            var title = p.read_text().split("\n")[0].trim_left("%# ").trim()
+            posts.push({"name": html_name, "title": title, "time": t})
         }
     }
 }
@@ -39,8 +44,10 @@ for p in md_paths {
 # sort by time descending
 posts.sort(key=func(post) { return post["time"] }, reverse=true)
 
+print("::: posts")
 for post in posts {
     var name = post["name"]
-    var d = post["time"].format("2006-01-02 15:04:05")
-    print("- [" + name + "](posts/" + name + ") &middot; *" + d + "*")
+    var d = post["time"].format("2006-01-02")
+    print("- [" + d + "]{.date} [" + post["title"] + "](posts/" + name + ")")
 }
+print(":::")

@@ -1,4 +1,4 @@
-# The Mention File Myth in Code Agents
+% The Mention File Myth in Code Agents
 
 > *Disclaimer: This post was written by me, but I used GLM 5.2 to restructure and polish the text. Parts of the investigation behind it were also done with GLM 5.2.*
 

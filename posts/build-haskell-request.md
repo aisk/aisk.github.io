@@ -1,4 +1,4 @@
-# Building a Python-requests-style HTTP Client in Haskell
+% Building a Python-requests-style HTTP Client in Haskell
 
 ## The Problem with Learning Haskell
 
