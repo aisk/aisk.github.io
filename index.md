@@ -3,6 +3,8 @@
 Notes on programming, by [aisk](https://github.com/aisk).
 
 ::: posts
+- [2026-11-10]{.date} [Learning GGML with GGBond, Part 1: Backend, Scheduler, and a Matrix Multiplication](posts/learn-ggml-with-ggbond-1.html)
+- [2026-11-10]{.date} [用 GGBond 学 GGML（一）：Backend、Scheduler 和一次矩阵乘法](posts/learn-ggml-with-ggbond-1.zh.html)
 - [2026-10-04]{.date} [Using Third-Party Models as Subagents Alongside Claude in Claude Code](posts/cheap-models-cameo-in-claude-code.html)
 - [2026-07-18]{.date} [The Mention File Myth in Code Agents](posts/mention-file-myth-in-code-agents.html)
 - [2026-03-14]{.date} [Building a Python-requests-style HTTP Client in Haskell](posts/build-haskell-request.html)

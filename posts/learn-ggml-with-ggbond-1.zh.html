@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>用 GGBond 学 GGML（一）：Backend、Scheduler 和一次矩阵乘法</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style>
+    body {
+      max-width: 56em;
+      margin: 0;
+      padding: 2.5rem clamp(1rem, 7vw, 6rem) 4rem;
+      font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+      line-height: 1.75;
+      hyphens: auto;
+      text-wrap: pretty;
+    }
+    h1, h2, h3, h4 {
+      line-height: 1.3;
+      hyphens: manual;
+    }
+    h1 {
+      font-size: 1.7em;
+    }
+    h2 {
+      font-size: 1.35em;
+    }
+    h3 {
+      font-size: 1.15em;
+    }
+    a, a:visited {
+      color: #0b5cad;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    li {
+      margin: 0.3em 0;
+    }
+    code {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      background-color: #f1f1f1;
+      padding: 0.1em 0.3em;
+      border-radius: 3px;
+    }
+    pre {
+      background-color: #f6f6f6;
+      padding: 0.8em 1em;
+      border-radius: 4px;
+      line-height: 1.5;
+    }
+    pre code {
+      white-space: pre;
+      background-color: transparent;
+    }
+    hr {
+      border-top-color: #ddd;
+    }
+    #title-block-header {
+      text-align: left;
+      margin-bottom: 2em;
+    }
+    .back {
+      font-size: 0.9em;
+    }
+    .posts ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    .posts li {
+      hyphens: manual;
+      display: flex;
+      column-gap: 1.2em;
+      margin: 0.7em 0;
+    }
+    .posts .date {
+      color: #888;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-6EMDZ9RNCQ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-6EMDZ9RNCQ');
+  </script>
+</head>
+<body>
+<nav class="back"><a href="../index.html">&larr; Buzhanxian</a></nav>
+<header id="title-block-header">
+<h1 class="title">用 GGBond 学 GGML（一）：Backend、Scheduler
+和一次矩阵乘法</h1>
+</header>
+<p>本文是“用 GGBond 学 GGML”系列的第一篇。这个系列借助 <a
+href="https://github.com/aisk/ggbond">GGBond</a> 这个 Python 封装来介绍
+GGML 的概念和用法，后续文章会依次涉及张量与形状、计算图与内存分配、GGUF
+模型文件的加载，最后实现一个完整模型的推理。本篇介绍写这个系列的原因、GGML
+的两阶段计算方式，以及几套 API
+之间的关系，并以矩阵乘法为例给出可以运行的代码。</p>
+<h2 id="ggml-的学习门槛">GGML 的学习门槛</h2>
+<p><a href="https://github.com/ggml-org/ggml">GGML</a> 是 llama.cpp 和
+whisper.cpp 使用的张量库。它体积小，几乎没有外部依赖，支持
+CPU、CUDA、Metal、Vulkan
+等多种设备，适合用来自行实现模型推理。但是它的学习门槛比较高，原因主要有三个。</p>
+<p>首先，它缺少教程。官方文档基本上只有头文件里的注释和
+<code>examples</code>
+目录下的几个示例程序。要了解某个函数的用法，通常只能去 llama.cpp
+的源码里查找它的调用。</p>
+<p>其次是语言。GGML 的对外接口是纯 C，内部实现是 C 和 C 风格的
+C++。使用者需要手动管理内存，需要自己计算缓冲区的大小，参数有误时
+<code>GGML_ASSERT</code> 会直接终止进程。对于主要使用 Python
+的开发者，这些都增加了上手的难度。</p>
+<p>最后，GGML 在演进过程中积累了多套
+API。它们目前都可以使用，也都出现在头文件和示例里，但其中一部分在多数场景下已经没有必要使用。初学者面对同一件事的多种写法，不容易判断应该学习哪一种，也不容易看出它们之间的关系。</p>
+<h2 id="ggbond">GGBond</h2>
+<p>GGBond 是 GGML 的一个 Python 封装，它在概念上与 GGML
+基本一一对应。</p>
+<p>GGML 的设计本身接近面向对象，只是受 C
+语言的限制，表现为一组以某个结构体为第一个参数的函数，例如
+<code>ggml_new_tensor_2d(ctx, ...)</code> 和
+<code>ggml_backend_graph_compute(backend, graph)</code>。GGBond
+把这些结构体封装成类，把函数改为方法，方法名沿用原函数名去掉前缀后的部分。上面两个调用在
+GGBond 中分别是 <code>ctx.new_tensor_2d(...)</code> 和
+<code>backend.compute(graph)</code>。</p>
+<p>在此基础上，GGBond 增加了少量 Python 语言层面的便利。资源可以用
+<code>with</code> 语句自动释放，张量数据通过 numpy
+数组读写，一部分会导致进程终止的断言被提前检查并转换为 Python
+异常。除此之外它不引入 GGML
+没有的概念，建图、分配内存、执行计算这些步骤仍然需要显式写出，每一步都有对应的
+C 函数。</p>
+<p>这些特点使它适合用于学习 GGML。</p>
+<ul>
+<li>不需要学习新的语言，也不需要配置 C/C++ 的工程环境。</li>
+<li>可以在 REPL
+中逐步执行并观察结果，例如创建张量后查看它的形状，建图后查看图中的节点。</li>
+<li>概念和函数名与 GGML 一致，所以学到的内容可以直接用于阅读 llama.cpp
+的源码，或者用 C/C++ 编写 GGML 程序。</li>
+</ul>
+<p>GGBond
+也可以用于实际的开发。一种做法是先用它验证模型实现的正确性，再改写为等价的
+C/C++ 代码。另一种做法是直接使用 Python 代码。实际的计算在 GGML
+内部完成，运行在 CPU 线程或显卡上，Python
+一侧只负责加载权重、建图和发起计算，这部分开销在整个推理过程中占比很小，因此性能一般不是主要问题。</p>
+<p>它的不足在于分发。编译好的 GGML 程序是单个可执行文件，而使用 GGBond
+的程序需要附带 Python 运行时和 GGML 的动态库。不过与 PyTorch
+相比，需要附带的内容仍然少得多。</p>
+<p>GGBond 目前需要从源码安装。它本身是纯 Python 代码，但依赖的 <a
+href="https://github.com/abetlen/ggml-python">ggml-python</a>
+会在安装时编译 GGML，因此需要系统中有 C/C++ 编译器和 CMake。</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install git+https://github.com/aisk/ggbond</span></code></pre></div>
+<h2 id="两阶段计算">两阶段计算</h2>
+<p>GGML 的计算分为两个阶段，先定义计算，再执行计算。</p>
+<p>在 PyTorch 中，<code>c = a @ b</code> 执行之后 <code>c</code>
+中就有了结果。GGML
+的行为不同。对张量调用运算函数只是描述了这次运算，返回的新张量记录了运算的类型和输入，其中没有数据。下面在
+REPL 中演示这一点。</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> ggbond.ggml <span class="im">import</span> Context, F32</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> ctx <span class="op">=</span> Context(<span class="dv">1</span> <span class="op">&lt;&lt;</span> <span class="dv">20</span>, no_alloc<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> a <span class="op">=</span> ctx.new_tensor_2d(F32, <span class="dv">2</span>, <span class="dv">4</span>, name<span class="op">=</span><span class="st">&quot;a&quot;</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> b <span class="op">=</span> ctx.new_tensor_2d(F32, <span class="dv">2</span>, <span class="dv">3</span>, name<span class="op">=</span><span class="st">&quot;b&quot;</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> c <span class="op">=</span> ctx.mul_mat(a, b)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> c</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>ggml.Tensor name<span class="op">=</span><span class="st">&#39;&#39;</span> ne<span class="op">=</span>(<span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>) dtype<span class="op">=</span>F32<span class="op">&gt;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> c.op</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>Op.MUL_MAT: <span class="dv">29</span><span class="op">&gt;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> c.src</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>(<span class="op">&lt;</span>ggml.Tensor name<span class="op">=</span><span class="st">&#39;a&#39;</span> ne<span class="op">=</span>(<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">1</span>, <span class="dv">1</span>) dtype<span class="op">=</span>F32<span class="op">&gt;</span>, <span class="op">&lt;</span>ggml.Tensor name<span class="op">=</span><span class="st">&#39;b&#39;</span> ne<span class="op">=</span>(<span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>) dtype<span class="op">=</span>F32<span class="op">&gt;</span>)</span></code></pre></div>
+<p>此时 <code>c</code>
+的形状、运算类型和输入都已确定，但计算还没有发生。</p>
+<p>下一步是从结果张量出发，把它依赖的所有张量收集为一张计算图。</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> graph <span class="op">=</span> ctx.new_graph().build_forward_expand(c)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> graph</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>ggml.Graph n_nodes<span class="op">=</span><span class="dv">1</span> n_leafs<span class="op">=</span><span class="dv">2</span><span class="op">&gt;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">list</span>(graph.nodes())</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>[<span class="op">&lt;</span>ggml.Tensor name<span class="op">=</span><span class="st">&#39;node_0&#39;</span> ne<span class="op">=</span>(<span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>) dtype<span class="op">=</span>F32<span class="op">&gt;</span>]</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">list</span>(graph.leafs())</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>[<span class="op">&lt;</span>ggml.Tensor name<span class="op">=</span><span class="st">&#39;a&#39;</span> ne<span class="op">=</span>(<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">1</span>, <span class="dv">1</span>) dtype<span class="op">=</span>F32<span class="op">&gt;</span>, <span class="op">&lt;</span>ggml.Tensor name<span class="op">=</span><span class="st">&#39;b&#39;</span> ne<span class="op">=</span>(<span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>) dtype<span class="op">=</span>F32<span class="op">&gt;</span>]</span></code></pre></div>
+<p>图中有一个需要计算的节点和两个叶子。叶子是不需要计算、只提供数据的张量。至此第一阶段完成。第二阶段是为图中的张量分配内存并执行这张图，执行之后
+<code>c</code> 中才有数据。</p>
+<p>采用这种方式，是因为 GGML
+在执行前就能得到完整的计算过程。它可以据此提前算出所需的内存总量，让生命周期不重叠的中间结果共用同一块内存，并决定图的各个部分分别在哪个设备上执行。</p>
+<p>GGML 的几套 API
+在第一阶段没有区别，建图的方式相同。它们的区别在第二阶段，也就是张量数据存放在哪里，以及由谁执行计算图。</p>
+<h2 id="contextbackend-和-scheduler">Context、Backend 和 Scheduler</h2>
+<p>GGML 最初只支持 CPU，目标是利用 AVX2、NEON
+等向量指令集加速矩阵运算。在当时的设计中，一个 <code>ggml_context</code>
+对应一块内存，张量的元信息、张量的数据和计算图都存放在其中。创建张量时会同时分配数据的空间，计算也在这块内存上进行。这种用法通常称为
+Context
+API。它目前仍然可用，在早期的示例和文章中也很常见，但已经不推荐使用，本系列不会采用它。这里提到它，是因为了解这段历史有助于理解
+context 现在的职责。</p>
+<p><strong>Backend API</strong>
+是为支持显卡而引入的。显卡上的数据位于显存，无法与元信息一起存放在
+context 的主机内存里。GGML 因此把张量数据的分配和存放从 context
+中分离出来，交给新增的 backend。Context
+保留了下来，但只负责存放元信息和计算图，创建时需要指定
+<code>no_alloc=true</code>，表示不为张量数据分配空间。数据存放在 backend
+分配的 buffer 中，计算也由 backend 执行。在这套体系中 CPU 同样是一个
+backend，与 CUDA、Metal 的地位相同，它使用的仍然是原有的 CPU
+计算代码，因此性能与 Context API 没有差别。</p>
+<p><strong>Scheduler API</strong> 建立在 Backend API
+之上，用于让一张图在多个 backend 上执行。常见的场景有两种。一种是显卡
+backend 不支持图中的某个运算，这部分需要由 CPU
+执行。另一种是显存不足以容纳整个模型，只能把一部分层放在显卡上。Scheduler
+根据每个节点可以在哪些 backend 上执行，以及权重所在的
+backend，把图划分为若干段，每一段交给一个
+backend，并在相邻的段之间拷贝数据。需要说明的是，这些段是按顺序依次执行的，多个设备并不会同时计算。</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th>张量数据的位置</th>
+<th>负责分配</th>
+<th>负责计算</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backend API</td>
+<td>一个 backend 的 buffer</td>
+<td><code>ggml_backend_alloc_ctx_tensors</code> 和
+<code>ggml_gallocr</code></td>
+<td><code>ggml_backend_graph_compute</code></td>
+</tr>
+<tr>
+<td>Scheduler API</td>
+<td>多个 backend 的 buffer</td>
+<td><code>ggml_backend_sched</code></td>
+<td><code>ggml_backend_sched_graph_compute</code></td>
+</tr>
+</tbody>
+</table>
+<p>llama.cpp 和 whisper.cpp 目前都基于 Scheduler API，在只使用一个
+backend 的情况下也是如此，它是现在的主要用法。Backend API 是理解
+Scheduler 的基础，在确定只使用一个设备时也可以直接使用。</p>
+<p>下面用同一个例子分别演示这两套 API。</p>
+<h2 id="示例矩阵乘法">示例：矩阵乘法</h2>
+<p>示例使用 GGML 自带的 <code>simple</code> 示例中的数据，一个 4×2
+的矩阵和一个 3×2 的矩阵。</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> np.array([[<span class="dv">2</span>, <span class="dv">8</span>], [<span class="dv">5</span>, <span class="dv">1</span>], [<span class="dv">4</span>, <span class="dv">2</span>], [<span class="dv">8</span>, <span class="dv">6</span>]], dtype<span class="op">=</span>np.float32)  <span class="co"># 4 x 2</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> np.array([[<span class="dv">10</span>, <span class="dv">5</span>], [<span class="dv">9</span>, <span class="dv">9</span>], [<span class="dv">5</span>, <span class="dv">4</span>]], dtype<span class="op">=</span>np.float32)         <span class="co"># 3 x 2</span></span></code></pre></div>
+<p>这里需要先说明形状的问题。GGML 的维度顺序与 numpy 相反，numpy 中 4 行
+2 列的矩阵在 GGML 中要写成
+<code>new_tensor_2d(F32, 2, 4)</code>，列数在前，行数在后。<code>mul_mat</code>
+的语义也因此与 numpy 的 <code>@</code> 不同，<code>mul_mat(a, b)</code>
+相当于 numpy 中的 <code>b @ a.T</code>。所以这个示例的结果是一个 3×4
+的矩阵。</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> b <span class="op">@</span> a.T</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>array([[ <span class="fl">60.</span>,  <span class="fl">55.</span>,  <span class="fl">50.</span>, <span class="fl">110.</span>],</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">90.</span>,  <span class="fl">54.</span>,  <span class="fl">54.</span>, <span class="fl">126.</span>],</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">42.</span>,  <span class="fl">29.</span>,  <span class="fl">28.</span>,  <span class="fl">64.</span>]], dtype<span class="op">=</span>float32)</span></code></pre></div>
+<p>形状的规则会在下一篇中详细介绍，本篇只需要知道维度顺序是相反的。</p>
+<h3 id="backend-api">Backend API</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ggbond.ggml <span class="im">import</span> Backend, Context, GAllocr, F32</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> Backend.cpu_init() <span class="im">as</span> backend, <span class="op">\</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        Context(<span class="dv">1</span> <span class="op">&lt;&lt;</span> <span class="dv">20</span>, no_alloc<span class="op">=</span><span class="va">True</span>) <span class="im">as</span> ctx_w, <span class="op">\</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        Context(<span class="dv">1</span> <span class="op">&lt;&lt;</span> <span class="dv">20</span>, no_alloc<span class="op">=</span><span class="va">True</span>) <span class="im">as</span> ctx_g:</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># the &quot;weights&quot;: only metadata is created in ctx_w</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    ta <span class="op">=</span> ctx_w.new_tensor_2d(F32, <span class="dv">2</span>, <span class="dv">4</span>, name<span class="op">=</span><span class="st">&quot;a&quot;</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    tb <span class="op">=</span> ctx_w.new_tensor_2d(F32, <span class="dv">2</span>, <span class="dv">3</span>, name<span class="op">=</span><span class="st">&quot;b&quot;</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ggml_backend_alloc_ctx_tensors: allocate their data on the backend</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    backend.alloc_ctx_tensors(ctx_w)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    ta.write(a)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    tb.write(b)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># phase 1: define, in a separate context</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    tc <span class="op">=</span> ctx_g.mul_mat(ta, tb)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    graph <span class="op">=</span> ctx_g.new_graph().build_forward_expand(tc)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># phase 2: allocate the graph&#39;s tensors, then compute</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> GAllocr.from_backend(backend) <span class="im">as</span> allocr:</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>        allocr.alloc_graph(graph)</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>        backend.compute(graph)</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(tc.to_numpy())</span></code></pre></div>
+<pre><code>[[ 60.  55.  50. 110.]
+ [ 90.  54.  54. 126.]
+ [ 42.  29.  28.  64.]]</code></pre>
+<p>代码中用到了 <code>Backend</code>、<code>Context</code> 和
+<code>GAllocr</code> 三种对象。</p>
+<p><code>Backend</code> 表示存放数据和执行计算的设备。这里使用的是
+CPU。改用 <code>Backend.cuda_init()</code> 或
+<code>Backend.metal_init()</code> 时，其余代码不需要修改。</p>
+<p>两个 <code>Context</code> 都指定了 <code>no_alloc=True</code>，各自的
+1MB 空间只用于存放元信息，与数据的大小无关。<code>ctx_w</code>
+存放长期存在的张量，在实际的模型中对应权重。<code>ctx_g</code>
+存放计算图和图中的中间张量。GGML
+程序通常会把二者分开，因为权重只需要加载一次，而计算图可能在每次推理时重新构建。<code>ctx_g.mul_mat(ta, tb)</code>
+表示运算结果创建在 <code>ctx_g</code> 中，而两个输入来自
+<code>ctx_w</code>，这与 C 中 <code>ggml_mul_mat(ctx, a, b)</code>
+第一个参数的含义相同。</p>
+<p>张量数据的空间需要显式分配，分配方式有两种。</p>
+<ul>
+<li><code>backend.alloc_ctx_tensors(ctx_w)</code> 为一个 context
+中已有的全部张量在 backend
+上分配空间，适用于权重这类长期存在的张量。分配之后才能调用
+<code>write</code>，写入的数据会传输到
+backend，使用显卡时即传输到显存。</li>
+<li><code>GAllocr</code> 对应
+<code>ggml_gallocr</code>，为一张图中需要计算的张量分配空间。它会分析整张图，让后面的节点复用已经不再需要的中间结果所占的内存，因此总的内存占用远小于为每个张量单独分配的情况。</li>
+</ul>
+<p><code>GAllocr</code>
+分配的内存由它自己持有，关闭后即被释放，所以结果需要在它关闭之前读取。示例中
+<code>tc.to_numpy()</code> 位于 <code>with</code>
+块内部就是出于这个原因。</p>
+<h3 id="scheduler-api">Scheduler API</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ggbond.ggml <span class="im">import</span> Backend, Context, DeviceType, Scheduler, F32</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>Backend.load_all()</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> Backend.init_best() <span class="im">as</span> gpu, <span class="op">\</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        Backend.init_by_type(DeviceType.CPU) <span class="im">as</span> cpu, <span class="op">\</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>        Context(<span class="dv">1</span> <span class="op">&lt;&lt;</span> <span class="dv">20</span>, no_alloc<span class="op">=</span><span class="va">True</span>) <span class="im">as</span> ctx, <span class="op">\</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        Scheduler(gpu, cpu) <span class="im">as</span> sched:</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># phase 1: define, inputs are part of the graph this time</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    ta <span class="op">=</span> ctx.new_tensor_2d(F32, <span class="dv">2</span>, <span class="dv">4</span>, name<span class="op">=</span><span class="st">&quot;a&quot;</span>).set_input()</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    tb <span class="op">=</span> ctx.new_tensor_2d(F32, <span class="dv">2</span>, <span class="dv">3</span>, name<span class="op">=</span><span class="st">&quot;b&quot;</span>).set_input()</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    tc <span class="op">=</span> ctx.mul_mat(ta, tb).set_output()</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    graph <span class="op">=</span> ctx.new_graph().build_forward_expand(tc)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># phase 2: the scheduler allocates and computes</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    sched.alloc_graph(graph)</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    ta.write(a)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    tb.write(b)</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    sched.compute(graph)</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(tc.to_numpy())</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(sched.n_splits, sched.get_tensor_backend(tc))</span></code></pre></div>
+<pre><code>[[ 60.  55.  50. 110.]
+ [ 90.  54.  54. 126.]
+ [ 42.  29.  28.  64.]]
+1 &lt;ggml.Backend name=&#39;CPU&#39;&gt;</code></pre>
+<p><code>Backend.load_all()</code> 注册当前 GGML 构建所支持的全部
+backend，<code>Backend.init_best()</code>
+从中选择最合适的设备，存在显卡时会选择显卡。<code>Scheduler(gpu, cpu)</code>
+按优先级顺序接收多个 backend，靠前的优先使用。最后一个通常是
+CPU，用于执行其他 backend 不支持的运算。</p>
+<p>Scheduler 内部包含了图的分配器，因此不再需要
+<code>GAllocr</code>。<code>sched.alloc_graph</code> 和
+<code>sched.compute</code> 分别取代了上一个示例中的
+<code>allocr.alloc_graph</code> 和 <code>backend.compute</code>。</p>
+<p>这个示例提供输入的方式也与上一个不同。<code>ta</code> 和
+<code>tb</code> 没有放在单独的 context 中预先分配，而是作为图的输入，用
+<code>set_input()</code> 标记，与中间结果一样由 Scheduler
+分配，所以写入数据的操作位于 <code>alloc_graph</code>
+之后。<code>set_output()</code>
+表示该张量是最终结果，分配器不会让其他节点复用它的内存。在实际的模型中这两种方式会同时使用，权重通过
+<code>alloc_ctx_tensors</code>
+预先分配并上传，每次推理都会变化的输入（例如 token）使用
+<code>set_input()</code>。</p>
+<p>最后一行输出的是图被划分的段数，以及 <code>tc</code> 被分配到的
+backend。本文运行环境中的 GGML 只包含 CPU
+backend，<code>init_best()</code> 返回的也是
+CPU，所以图只有一段。在有显卡的环境中，同样的代码会在显卡上执行这次乘法。</p>
+<h2 id="小结">小结</h2>
+<ul>
+<li>GGML
+的计算分为两个阶段。对张量调用运算函数只是定义计算图，分配内存并执行之后才会得到结果。</li>
+<li>Context
+负责存放元信息和计算图。早期它还负责存放数据和执行计算，这种用法已经不推荐。</li>
+<li>Backend
+负责存放数据和执行计算。数据的空间需要显式分配，长期存在的张量使用
+<code>alloc_ctx_tensors</code>，图中的张量使用
+<code>GAllocr</code>。</li>
+<li>Scheduler 把一张图分配给多个 backend
+执行，并包含了图的分配器，是目前的主要用法。</li>
+</ul>
+<p>下一篇介绍张量，包括维度顺序和形状的规则。</p>
+</body>
+</html>
